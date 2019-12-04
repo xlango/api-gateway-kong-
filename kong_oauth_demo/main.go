@@ -13,7 +13,6 @@ import (
 	"time"
 )
 
-
 type RespCode struct {
 	RedirectUri string `json:"redirect_uri"`
 }
@@ -41,10 +40,10 @@ type Person struct {
 }
 
 func main() {
-	http.HandleFunc("/login",loginOAuth)
-	http.HandleFunc("/test/a",handla)
+	http.HandleFunc("/login", loginOAuth)
+	http.HandleFunc("/test/a", handla)
 
-	http.ListenAndServe(":10001",nil)
+	http.ListenAndServe(":10001", nil)
 }
 
 func stringToBase64(key string) string {
@@ -54,14 +53,15 @@ func stringToBase64(key string) string {
 	return encodeString
 }
 
-func getOAuthCode(username string,password string) *RespCodeEntity {
+func getOAuthCode(username string, password string) *RespCodeEntity {
 	apiUrl := "https://192.168.10.33:8443"
 	resource := "/apigwtest/oauth2/authorize"
 	data := url.Values{}
 	data.Set("client_id", "BxbjIJwOEHdarSjsfadjlw3whezCPTGn")
 	data.Set("response_type", "code")
 	data.Set("scope", "email address")
-	data.Set("provision_key", "PzFa0aSZm06KfaMzYlkOuQyWdyeuyV7T")
+	//data.Set("provision_key", "PzFa0aSZm06KfaMzYlkOuQyWdyeuyV7T")
+	data.Set("provision_key", "hGg6tZ5OwiqftvjZJ09Z1n9LptXJ8aAl")
 	data.Set("authenticated_userid", username)
 	data.Set("state", "1")
 
@@ -73,12 +73,12 @@ func getOAuthCode(username string,password string) *RespCodeEntity {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Timeout: 5 * time.Second, Transport: tr,}
+	client := &http.Client{Timeout: 5 * time.Second, Transport: tr}
 	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode())) // URL-encoded payload
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-	fmt.Println(stringToBase64(fmt.Sprintf("%v:%v",username,password)))
-	r.Header.Add("Authorization", stringToBase64(fmt.Sprintf("%v:%v",username,password)))
+	fmt.Println(stringToBase64(fmt.Sprintf("%v:%v", username, password)))
+	r.Header.Add("Authorization", stringToBase64(fmt.Sprintf("%v:%v", username, password)))
 
 	resp, err := client.Do(r)
 	if err != nil {
@@ -106,7 +106,7 @@ func getOAuthCode(username string,password string) *RespCodeEntity {
 	return entity
 }
 
-func getToken(code string) *TokenEntity{
+func getToken(code string) *TokenEntity {
 	apiUrl := "https://192.168.10.33:8443"
 	resource := "/apigwtest/oauth2/token"
 	data := url.Values{}
@@ -124,7 +124,7 @@ func getToken(code string) *TokenEntity{
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Timeout: 5 * time.Second, Transport: tr,}
+	client := &http.Client{Timeout: 5 * time.Second, Transport: tr}
 	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode())) // URL-encoded payload
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
@@ -141,11 +141,11 @@ func getToken(code string) *TokenEntity{
 	rc := TokenEntity{}
 	json.Unmarshal(result, &rc)
 
-	return  &rc
+	return &rc
 }
 
 //通过refresh_token重新获取token
-func refreshToken(refreshToken string)  *TokenEntity{
+func refreshToken(refreshToken string) *TokenEntity {
 	apiUrl := "https://192.168.10.33:8443"
 	resource := "/apigwtest/oauth2/token"
 	data := url.Values{}
@@ -162,7 +162,7 @@ func refreshToken(refreshToken string)  *TokenEntity{
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	client := &http.Client{Timeout: 5 * time.Second, Transport: tr,}
+	client := &http.Client{Timeout: 5 * time.Second, Transport: tr}
 	r, _ := http.NewRequest("POST", urlStr, strings.NewReader(data.Encode())) // URL-encoded payload
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
@@ -179,9 +179,8 @@ func refreshToken(refreshToken string)  *TokenEntity{
 	rc := TokenEntity{}
 	json.Unmarshal(result, &rc)
 
-	return  &rc
+	return &rc
 }
-
 
 func loginOAuth(writer http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
@@ -190,18 +189,17 @@ func loginOAuth(writer http.ResponseWriter, request *http.Request) {
 	person := Person{}
 	json.Unmarshal(con, &person)
 
-	if person.Username=="xhyl"&&person.Password=="123456" {
-		code := getOAuthCode("xhyl","123456")
+	if person.Username == "xhyl" && person.Password == "123456" {
+		code := getOAuthCode("xhyl", "123456")
 		token := getToken(code.Code)
 
 		bytes, _ := json.Marshal(token)
 		writer.Write(bytes)
-	}else {
+	} else {
 		writer.Write([]byte("Auth failed!"))
 	}
 
 }
-
 
 func handla(writer http.ResponseWriter, request *http.Request) {
 	person := Person{
@@ -212,6 +210,3 @@ func handla(writer http.ResponseWriter, request *http.Request) {
 	bytes, _ := json.Marshal(person)
 	writer.Write(bytes)
 }
-
-
-
