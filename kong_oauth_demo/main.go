@@ -42,6 +42,7 @@ type Person struct {
 func main() {
 	http.HandleFunc("/login", loginOAuth)
 	http.HandleFunc("/test/a", handla)
+	http.HandleFunc("/check", handlCheck)
 
 	http.ListenAndServe(":10001", nil)
 }
@@ -202,6 +203,7 @@ func loginOAuth(writer http.ResponseWriter, request *http.Request) {
 }
 
 func handla(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println(1)
 	person := Person{
 		Name:    "a",
 		Age:     22,
@@ -209,4 +211,9 @@ func handla(writer http.ResponseWriter, request *http.Request) {
 	}
 	bytes, _ := json.Marshal(person)
 	writer.Write(bytes)
+}
+
+func handlCheck(writer http.ResponseWriter, request *http.Request) {
+	fmt.Println("api gateway check")
+	writer.Write([]byte("api gateway check"))
 }
